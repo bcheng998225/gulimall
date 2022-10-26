@@ -1,5 +1,28 @@
+server:
+  tomcat:
+    accept-count: 1000
+    max-connections: 2000
+    max-threads: 300
+    min-spare-threads: 50
+    uri-encoding: UTF-8
+    max-http-post-size: 100MB
+    accesslog:
+      enabled: true
+  port: 8008
+  connection-timeout: 60000
+  servlet:
+    context-path: /submitOrder
+  compression:
+    enabled: true
+  http2:
+    enabled: true
+
 spring:
   cloud:
+    sentinel:
+      transport:
+        #配置sentinel dashboard地址
+        dashboard: 192.168.236.128:8333
     gateway:
       routes:
         - id: product_route
@@ -9,19 +32,33 @@ spring:
           filters:
             - RewritePath=/api/(?<segment>.*),/$\{segment}
 
+        - id: coupon_route
+          uri: lb://gulimall-coupon
+          predicates:
+              - Path=/api/coupon/**
+          filters:
+              - RewritePath=/api/(?<segment>.*),/$\{segment}
+
         - id: third-party_route
           uri: lb://gulimall-third-party
           predicates:
             - Path=/api/thirdparty/**
           filters:
-             - RewritePath=/api/thirdparty/(?<segment>.*),/$\{segment}
+            - RewritePath=/api/thirdparty/(?<segment>.*),/$\{segment}
+
+        - id: order_route
+          uri: lb://gulimall-order
+          predicates:
+            - Path=/api/order/**
+          filters:
+            - RewritePath=/api/(?<segment>/?.*),/$\{segment}
 
         - id: member_route
           uri: lb://gulimall-member
           predicates:
-           - Path=/api/member/**
+            - Path=/api/member/**
           filters:
-          - RewritePath=/api/(?<segment>/?.*),/$\{segment}
+            - RewritePath=/api/(?<segment>/?.*),/$\{segment}
 
         - id: ware_route
           uri: lb://gulimall-ware
@@ -37,15 +74,40 @@ spring:
           filters:
             - RewritePath=/api/(?<segment>.*),/renren-fast/$\{segment}
 
-#        - id: order_route
-#          uri: lb://gulimall-order
-#          predicates:
-#            - Path=/api/order/**
-#          filters:
-#            - RewritePath=/api/(?<segment>/?.*),/$\{segment}
+        - id: gulimall_host_route
+          uri: lb://gulimall-product
+          predicates:
+            - Host=gulimall.com,item.gulimall.com
 
+        - id: gulimall_search_route
+          uri: lb://gulimall-search
+          predicates:
+           - Host=search.gulimall.com
 
-##前端项目： /api
+        - id: gulimall_auth_route
+          uri: lb://gulimall-auth-server
+          predicates:
+            - Host=auth.gulimall.com
+
+        - id: gulimall_cart_route
+          uri: lb://gulimall-cart
+          predicates:
+              - Host=cart.gulimall.com
+
+        - id: gulimall_order_route
+          uri: lb://gulimall-order
+          predicates:
+              - Host=order.gulimall.com
+
+        - id: gulimall_member_route
+          uri: lb://gulimall-member
+          predicates:
+              - Host=member.gulimall.com
+
+        - id: gulimall_seckill_route
+          uri: lb://gulimall-seckill
+          predicates:
+              - Host=seckill.gulimall.com
 
 
 

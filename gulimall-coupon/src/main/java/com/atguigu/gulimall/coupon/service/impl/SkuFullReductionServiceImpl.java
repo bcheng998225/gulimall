@@ -1,7 +1,7 @@
 package com.atguigu.gulimall.coupon.service.impl;
 
-import com.atguigu.common.to.MemberPrice;
-import com.atguigu.common.to.SkuReductionTo;
+import com.atguigu.common.to.member.MemberPrice;
+import com.atguigu.common.to.product.SkuReductionTo;
 import com.atguigu.common.utils.PageUtils;
 import com.atguigu.common.utils.Query;
 import com.atguigu.gulimall.coupon.dao.SkuFullReductionDao;

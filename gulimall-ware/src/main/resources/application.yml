@@ -6,7 +6,7 @@ spring:
   datasource:
     druid:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://192.168.236.128:3307/gulimall_vms?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+      url: jdbc:mysql://192.168.236.128:3307/gulimall_wms?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
       username: root
       password: 1234
   #nacos
@@ -16,6 +16,19 @@ spring:
         server-addr: 192.168.236.128:8848
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
+  rabbitmq:
+    host: 192.168.236.128
+    port: 5672
+    virtual-host: /
+    username: itcast
+    password: 1234
+    publisher-confirms: true  #开启发送端确认
+    publisher-returns: true  #开启发送端确认
+    template:
+      mandatory: true   #开启发送端确认只要抵达队列，以异步优先回调returnconfirm
+    listener:
+      simple:
+        acknowledge-mode: manual  #手动确认
 mybatis-plus:
   configuration:
     #在映射实体或者属性时，将数据库中表名和字段名中的下划线去掉，按照驼峰命名法映射
@@ -27,3 +40,4 @@ mybatis-plus:
 logging:
   level:
     com.atguigu: debug
+

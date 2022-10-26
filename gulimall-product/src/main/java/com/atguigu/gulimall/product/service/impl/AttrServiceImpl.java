@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -117,7 +118,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         pageUtils.setList(respVos);
         return pageUtils;
     }
-
+    @Cacheable(value = "attr",key = " 'attrInfo:'+#root.args[0]")
     @Override
     public AttrRespVo getAttrInfo(Long attrId) {
         AttrRespVo respVo = new AttrRespVo();
@@ -242,6 +243,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         return new PageUtils(page);
     }
 
+
     /**
      * //在指定所有集合里面查取可以被检索的属性
      *
@@ -249,12 +251,12 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
      * @return
      */
     @Override
-    public List<Long> seleteSearchAttrIds(List<Long> attrIds) {
+    public List<Long> selectSearchAttrs(List<Long> attrIds) {
 
         /**
          * select attr_id from 'pms_attr' where attr_id in(?) and search_type=1
          */
-        return this.baseMapper.seleteSearchAttrs(attrIds);
+        return this.baseMapper.selectSearchAttrs(attrIds);
 
 
     }

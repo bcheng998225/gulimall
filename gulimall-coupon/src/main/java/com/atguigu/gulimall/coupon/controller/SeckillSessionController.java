@@ -1,19 +1,15 @@
 package com.atguigu.gulimall.coupon.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.atguigu.gulimall.coupon.entity.SeckillSessionEntity;
-import com.atguigu.gulimall.coupon.service.SeckillSessionService;
 import com.atguigu.common.utils.PageUtils;
 import com.atguigu.common.utils.R;
+import com.atguigu.gulimall.coupon.entity.SeckillSessionEntity;
+import com.atguigu.gulimall.coupon.service.SeckillSessionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 
 
@@ -33,7 +29,7 @@ public class SeckillSessionController {
     /**
      * 列表
      */
-    @RequestMapping("/list")
+    @GetMapping("/list")
     //@RequiresPermissions("coupon:seckillsession:list")
     public R list(@RequestParam Map<String, Object> params){
         PageUtils page = seckillSessionService.queryPage(params);
@@ -41,6 +37,15 @@ public class SeckillSessionController {
         return R.ok().put("page", page);
     }
 
+    /**
+     * 上架最近3天的商品
+     */
+    @GetMapping("/lates3DaySession")
+    public R getLates3DaySession(){
+      List<SeckillSessionEntity> entities=seckillSessionService.getLates3DaySession();
+
+        return R.ok().setData(entities);
+    }
 
     /**
      * 信息

@@ -3,7 +3,7 @@
 
 <mapper namespace="com.atguigu.gulimall.ware.dao.WareSkuDao">
 
-	<!-- 可根据自己的需求，是否要使用 -->
+    <!-- 可根据自己的需求，是否要使用 -->
     <resultMap type="com.atguigu.gulimall.ware.entity.WareSkuEntity" id="wareSkuMap">
         <result property="id" column="id"/>
         <result property="skuId" column="sku_id"/>
@@ -13,12 +13,40 @@
         <result property="stockLocked" column="stock_locked"/>
     </resultMap>
     <update id="addStock">
-        UPDATE `wms_ware_sku` SET stock=stock+#{skuNum} WHERE sku_id=#{skuId} AND ware_id=#{wareId}
+        UPDATE `wms_ware_sku`
+        SET stock=stock + #{skuNum}
+        WHERE sku_id = #{skuId}
+          AND ware_id = #{wareId}
     </update>
-    <select id="getSkuStock" resultType="java.lang.Long">
-        SELECT SUM(stock-stock_locked) FROM wms_ware_sku WHERE ware_id=#{skuId}
 
+    <select id="getSkuStock" resultType="java.lang.Long">
+        SELECT SUM(stock - stock_locked)
+        FROM wms_ware_sku
+        WHERE ware_id = #{skuId}
     </select>
 
+    <select id="listWareIdHashStock" resultType="java.lang.Long">
+        SELECT ware_id
+        FROM `wms_ware_sku`
+        where sku_id = #{skuId}
+          and stock - stock_locked > 0
+    </select>
+
+    <update id="lockSkuStock">
+        UPDATE wms_ware_sku
+        SET stock_locked=stock_locked + #{num}
+        WHERE sku_id = #{skuId}
+          AND ware_id = #{wareId}
+          AND stock - stock_locked > #{num}
+    </update>
+
+    <update id="unlockStock">
+        UPDATE wms_ware_sku
+        SET stock_locked=stock_locked - #{num}
+        WHERE sku_id = #{skuId}
+          AND ware_id = #{wareId}
+          AND stock - stock_locked > #{num}
+
+    </update>
 
 </mapper>

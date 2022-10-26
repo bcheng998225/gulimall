@@ -44,6 +44,7 @@ public class ProductSaveServiceImpl implements ProductSaveService {
           IndexRequest indexRequest = new IndexRequest(EsConstant.PRODUCT_INDEX);
           indexRequest.id(esModel.getSkuId().toString());
            String s = JSON.toJSONString(esModel);
+            indexRequest.type("_doc");
             indexRequest.source(s, XContentType.JSON);
             bulkRequest.add(indexRequest);
         }
@@ -51,7 +52,7 @@ public class ProductSaveServiceImpl implements ProductSaveService {
         //TODO 如果批量错误 处理错误
         boolean b = bulk.hasFailures();
         List<Object> collect = Arrays.stream(bulk.getItems()).map(BulkItemResponse::getId).collect(Collectors.toList());
-        log.error("商品上架失败:{}",collect);
+        log.info("商品上架成功:{},返回数据:{}",collect,bulk.toString());
 
         return b;
     }

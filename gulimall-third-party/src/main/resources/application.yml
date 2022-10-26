@@ -13,5 +13,11 @@ spring:
       oss:
         endpoint: oss-cn-shenzhen.aliyuncs.com
         bucket: gulimall-bcheng
+      sms:
+        host: https://dfsns.market.alicloudapi.com
+        path: /data/send_sms
+        app-code: a7baa7233b374d6bb42fac65a061b6b9
+        skin: TPL_0001
+
 
 

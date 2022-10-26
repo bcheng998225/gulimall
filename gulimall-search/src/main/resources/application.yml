@@ -14,7 +14,18 @@ spring:
     nacos:
       discovery:
         server-addr: 192.168.236.128:8848
-
+       #thymeleaf
+  thymeleaf:
+    cache: false
+  redis:
+    host: 192.168.236.128
+    port: 6379
+    password: 1234
+  session:
+    store-type: redis
 logging:
   level:
     com.atguigu.gulimall: debug
+
+
+

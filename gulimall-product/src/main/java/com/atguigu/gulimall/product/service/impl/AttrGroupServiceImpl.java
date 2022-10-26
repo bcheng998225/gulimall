@@ -8,6 +8,7 @@ import com.atguigu.gulimall.product.entity.AttrGroupEntity;
 import com.atguigu.gulimall.product.service.AttrGroupService;
 import com.atguigu.gulimall.product.service.AttrService;
 import com.atguigu.gulimall.product.vo.AttrGroupWithAttrsVo;
+import com.atguigu.gulimall.product.vo.SpuItemAttrGroupVo;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -79,6 +80,15 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
             return withAttrsVo;
         }).collect(Collectors.toList());
         return collect;
+    }
+    //5.获取spu规格参数信息
+    @Override
+    public List<SpuItemAttrGroupVo> getAttrGruopWithAttrsBySpuId(Long spuId, Long catalogId) {
+        //查出当前spu对应的分组信息，以及当前分组对应的所有属性的值pms_attr_group
+        //1、查出当前spu对应的所有属性的分组信息以及当前分组下的所有属性对应的值
+        AttrGroupDao baseMapper = this.getBaseMapper();
+        List<SpuItemAttrGroupVo> vos = baseMapper.getAttrGruopWithAttrsBySpuId(spuId,catalogId);
+        return vos;
     }
 
 }

@@ -64,4 +64,10 @@ public class ProductAttrValueServiceImpl extends ServiceImpl<ProductAttrValueDao
         this.saveBatch(collect);
     }
 
+    @Override
+    public List<String> getSkuAttrValue(Long skuId) {
+
+        return  this.baseMapper.getSkuAttrValue(skuId);
+    }
+
 }

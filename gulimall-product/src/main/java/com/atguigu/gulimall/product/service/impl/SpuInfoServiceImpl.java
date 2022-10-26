@@ -1,10 +1,11 @@
 package com.atguigu.gulimall.product.service.impl;
 
 import com.alibaba.druid.util.StringUtils;
+import com.alibaba.fastjson.TypeReference;
 import com.atguigu.common.constant.ProductConstant;
-import com.atguigu.common.to.SkuHasStockVo;
-import com.atguigu.common.to.SkuReductionTo;
-import com.atguigu.common.to.SpuBoundTo;
+import com.atguigu.common.to.product.SkuHasStockVo;
+import com.atguigu.common.to.product.SkuReductionTo;
+import com.atguigu.common.to.product.SpuBoundTo;
 import com.atguigu.common.to.es.SkuEsModel;
 import com.atguigu.common.utils.PageUtils;
 import com.atguigu.common.utils.Query;
@@ -56,7 +57,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     CouponFeignService couponFeignService;
 
     @Autowired
-    BrandService  brandService;
+    BrandService brandService;
 
     @Autowired
     CategoryService categoryService;
@@ -205,16 +206,16 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     public void up(Long spuId) {
 
         //1.查出当前spuId对应的所有sku信息，品牌的名字
-        List<SkuInfoEntity> skus= skuInfoService.getSkusBySpuId(spuId);
+        List<SkuInfoEntity> skus = skuInfoService.getSkusBySpuId(spuId);
         List<Long> skuIdList = skus.stream().map(SkuInfoEntity::getSkuId).collect(Collectors.toList());
 
         //TODO 4.查出sku当前规格的所有可以被检索的属性
         List<ProductAttrValueEntity> baseAttrs = productAttrValueService.baseAttrListForspu(spuId);
-       List<Long> attrIds = baseAttrs.stream().map(ProductAttrValueEntity::getAttrId).collect(Collectors.toList());
-       //在指定所有集合里面查取可以被检索的属性
-       List<Long> searchAtt=attrService.seleteSearchAttrIds(attrIds);
-        Set<Long> idSet=new HashSet<>(searchAtt);
-       List<SkuEsModel.Attrs> collect = baseAttrs.stream().filter((item) -> {
+        List<Long> attrIds = baseAttrs.stream().map(ProductAttrValueEntity::getAttrId).collect(Collectors.toList());
+        //在指定所有集合里面查取可以被检索的属性
+        List<Long> searchAttrIds = attrService.selectSearchAttrs(attrIds);
+        Set<Long> idSet = new HashSet<>(searchAttrIds);
+        List<SkuEsModel.Attrs> collect = baseAttrs.stream().filter((item) -> {
             return idSet.contains(item.getAttrId());
         }).map((item) -> {
             SkuEsModel.Attrs attrs1 = new SkuEsModel.Attrs();
@@ -225,11 +226,13 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         //TODO 1.发送远程调用，库存查询是否有库存 hasStock
         Map<Long, Boolean> stockMap = null;
         try {
-            R<List<SkuHasStockVo>> skuHasStock = wareFeignService.getSkuHasStock(skuIdList);
-            stockMap = skuHasStock.getData()
+            R r = wareFeignService.getSkuHasStock(skuIdList);
+            TypeReference<List<SkuHasStockVo>> typeReference = new TypeReference<List<SkuHasStockVo>>() {
+            };
+            stockMap = r.getData(typeReference)
                     .stream().collect(Collectors.toMap(SkuHasStockVo::getSkuId, SkuHasStockVo::getHasStock));
         } catch (Exception e) {
-           log.error("库存服务查询异常:原因{}",e);
+            log.error("库存服务查询异常:原因{}", e);
         }
 
         //2.封装信息
@@ -237,7 +240,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         List<SkuEsModel> upProducts = skus.stream().map(sku -> {
             //组装信息
             SkuEsModel esModel = new SkuEsModel();
-            BeanUtils.copyProperties(sku,esModel);
+            BeanUtils.copyProperties(sku, esModel);
             //sku价格 skuPrice
             esModel.setSkuPrice(sku.getPrice());
             //sku图片 skuImg
@@ -246,7 +249,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             //1.发送远程调用，库存查询是否有库存 hasStock
             if (finalStockMap == null) {
                 esModel.setHasStock(true);
-            }else{
+            } else {
                 esModel.setHasStock(finalStockMap.get(sku.getSkuId()));
             }
             //TODO 2. 热度评分 0，hasScore
@@ -265,15 +268,32 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         }).collect(Collectors.toList());
 
         //TODO 5.将数据发给es进行保存，gulimall-search
-         R r = searchFeignService.productStatusUp(upProducts);
-        if (r.getCode()==0) {
+        R r = searchFeignService.productStatusUp(upProducts);
+        if (r.getCode() == 0) {
             //远程调用成功
             //TODO 6.修改当前商品已上架状态
             this.baseMapper.updataSpuStatus(spuId, ProductConstant.StatusEnum.SPU_UP.getCode());
-        }else{
+        } else {
             //远程调用失败
             //TODO 7.接口幂等性，重试机制
         }
+    }
+
+    //查询spu信息
+    @Override
+    public SpuInfoEntity getSpuInfoBySkuId(Long skuId) {
+        //先查询sku表里的数据
+        SkuInfoEntity byId = skuInfoService.getById(skuId);
+        //获得spuId
+        Long spuId = byId.getSpuId();
+        //再通过spuId查询spuInfo信息表里的数据
+        SpuInfoEntity spuInfoEntity = this.baseMapper.selectById(spuId);
+        //查询品牌表的数据获取品牌名
+//        BrandEntity brandEntity = brandService.getById(spuInfoEntity.getBrandId());
+//        spuInfoEntity.setBrandName(brandEntity.getName());
+        spuInfoEntity.setBrandId(spuInfoEntity.getBrandId());
+
+        return spuInfoEntity;
     }
 
     /**

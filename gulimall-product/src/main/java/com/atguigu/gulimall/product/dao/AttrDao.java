@@ -17,5 +17,6 @@ import java.util.List;
 @Mapper
 public interface AttrDao extends BaseMapper<AttrEntity> {
 
-    List<Long> seleteSearchAttrs(@Param("attrIds") List<Long> attrIds);
+
+    List<Long> selectSearchAttrs(@Param("attrIds") List<Long> attrIds);
 }

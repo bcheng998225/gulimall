@@ -11,9 +11,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -50,6 +52,13 @@ public class BrandServiceImpl extends ServiceImpl<BrandDao, BrandEntity> impleme
             categoryBrandRelationService.updateBrand(brand.getBrandId(),brand.getName());
             //TODO 更新其他关联
         }
+    }
+    @Cacheable(value = "brand",key = " 'brandInfo:'+#root.args[0]")
+    @Override
+    public List<BrandEntity> getBrands(List<Long> brandIds) {
+
+
+        return this.baseMapper.selectList(new QueryWrapper<BrandEntity>().in("brand_id",brandIds));
     }
 
 }
